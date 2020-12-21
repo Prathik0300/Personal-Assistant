@@ -9,22 +9,18 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.remote.command import Command
 import pyttsx3
 import datetime as dt
 import json
 import pickle
 import pickle
+import os
 import os.path
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-
-
-
-
-"""
-The code starts from here
-"""
+import random
 
 """
 Gmail API for personal account
@@ -32,6 +28,7 @@ Gmail API for personal account
 class Gmail_Personal:
     def __init__(self):
         self.SCOPES=['https://www.googleapis.com/auth/gmail.readonly']
+        self.count = pickle.load(open("personalMail.pkl","rb"))
 
     def main(self):
         """Shows basic usage of the Gmail API.
@@ -55,27 +52,27 @@ class Gmail_Personal:
         # Save the credentials for the next run
             with open('token.pickle', 'wb') as token:
                 pickle.dump(creds, token)
-
         service = build('gmail', 'v1', credentials=creds)
-
     # Call the Gmail API
-    #results = service.users().labels().list(userId='me').execute()
-    #labels = results.get('labels', [])
-
-        results = service.users().messages().list(userId='me',labelIds=['UNREAD'], q="is:unread AND after:<time_since_epoch_in_seconds>").execute()
+        results = service.users().messages().list(userId='me',labelIds=['UNREAD','INBOX']).execute()
         messages = results.get('messages',[])
-
-
         if not messages:
-            Assistant().speak('No messages found')
+            Assistant().speak("no new message in your personal Account")
+            os.remove('C:\college\Github_improvement\Search\personalMail.pkl')
+            pickle.dump([0],open("personalMail.pkl","wb"))
         else:
             message_count = 0
             for message in messages:
-                print(message)
                 msg = service.users().messages().get(userId='me',id=message['id']).execute()
                 message_count+=1
-            Assistant().speak('you have '+str(message_count)+" messages")
-
+            if message_count>self.count[0]:
+                Assistant().speak("you have a new message in your personal Account sir")
+                os.remove('C:\college\Github_improvement\Search\personalMail.pkl')
+                pickle.dump([message_count],open("personalMail.pkl","wb"))
+            else:
+                Assistant().speak("no new message in your personal Account")
+                os.remove('C:\college\Github_improvement\Search\personalMail.pkl')
+                pickle.dump([message_count],open("personalMail.pkl","wb"))
 
 """
 Gmail API for work account
@@ -83,7 +80,7 @@ Gmail API for work account
 class Gmail_Work:
     def __init__(self):
         self.SCOPES=['https://www.googleapis.com/auth/gmail.readonly']
-
+        self.count = pickle.load(open("workMail.pkl","rb"))
     def main(self):
         """Shows basic usage of the Gmail API.
         Lists the user's Gmail labels.
@@ -108,27 +105,31 @@ class Gmail_Work:
                 pickle.dump(creds, token)
 
         service = build('gmail', 'v1', credentials=creds)
-
     # Call the Gmail API
     #results = service.users().labels().list(userId='me').execute()
     #labels = results.get('labels', [])
 
-        results = service.users().messages().list(userId='me',labelIds=['UNREAD'], q="is:unread AND after:<time_since_epoch_in_seconds>").execute()
+        results = service.users().messages().list(userId='me',labelIds=['UNREAD','INBOX']).execute()
         messages = results.get('messages',[])
-
-
         if not messages:
-            Assistant().speak('No messages found.')
+            Assistant().speak("no new message in your work Account")
+            os.remove('C:\college\Github_improvement\Search\workMail.pkl')
+            pickle.dump([0],open("workMail.pkl","wb"))
         else:
             message_count = 0
             for message in messages:
-                print(message)
                 msg = service.users().messages().get(userId='me',id=message['id']).execute()
                 message_count+=1
-            Assistant().speak('you have '+str(message_count)+" messages")
+            if message_count>self.count[0]:
+                Assistant().speak("you have a new message in your work Account sir")
+                os.remove('C:\college\Github_improvement\Search\workMail.pkl')
+                pickle.dump([message_count],open("workMail.pkl","wb"))
+            else:
+                Assistant().speak("no new message in your work Account")
+                os.remove('C:\college\Github_improvement\Search\workMail.pkl')
+                pickle.dump([message_count],open("workMail.pkl","wb"))
 
 class Assistant:
-
     def __init__(self):
         self.engine = pyttsx3.init()
         self.hour = dt.datetime.now().hour
@@ -160,35 +161,79 @@ class Assistant:
         self.engine.say("sorry, didn't understand your query")
         self.engine.runAndWait()
 
+class WebDriver:
+    def __init__(self):
+        self.driver = webdriver.Chrome(ChromeDriverManager().install())
+        self.action = ActionChains(self.driver)
+
+    def searchQuery(self,query,Open=False):
+        self.driver.maximize_window()
+        self.driver.get("https://www.google.com/search?q="+query+"&start0")
+        if Open:
+            wait = WebDriverWait(self.driver,100)
+            wait.until(ec.visibility_of_element_located((By.XPATH,'//*[@id="wp-tabs-container"]/div[1]/div[2]/div/div/div/div/div/div[2]/h3/a')))
+            YtLink = self.driver.find_element_by_xpath('//*[@id="wp-tabs-container"]/div[1]/div[2]/div/div/div/div/div/div[2]/h3/a').get_attribute('href')
+            print(YtLink)
+            self.action.click(on_element=YtLink)
+            self.action.perform()
+
 class Search:
     def __init__(self):
-        #self.driver = webdriver.Chrome(ChromeDriverManager().install())
         self.QueryResult = {}
-        #self.action = ActionChains(self.driver)
         self.patterns = pickle.load(open("patterns.pkl","rb"))
 
     def FindTag(self,query):
-        if query in self.patterns:
+        if query.lower() in self.patterns:
             return self.patterns[query]
         else:
-            return Assistant().error()
+            return "search"
             
     def FindQuery(self,query):
         tag = self.FindTag(query)
         if tag=="mail":
-            print("launching")
             self.LaunchEmail()
+        elif tag=="search":
+            self.LaunchSearch(query)
+        elif tag=="entertainment":
+            self.LaunchEntertainment()
+
+
+    def LaunchEntertainment(self):
+
+        def AddMusic():
+            music = input("Enter music: ")
+            library=pickle.load(open("library.pkl","rb"))
+            library.append(music)
+            pickle.dump(list(set(library)),open("library.pkl","wb"))
+            self.LaunchSearch(music+" song",True)
+        try:
+            library = pickle.load(open("library.pkl","rb"))
+            Assistant().speak("should I play some new music?")
+            play_new = input("say something:")
+            if play_new.lower()=="yes" or play_new.lower()=="y":
+                AddMusic()
+            else:
+                music = random.choice(library)
+                self.LaunchSearch(music+" song",True)
+        except Exception:
+            Assistant().speak("No music found in the Library, want to add music to the library?")
+            if input().lower()=="yes" or input().lower()=='y':
+                music = input("Enter music: ")
+                pickle.dump([music],open("library.pkl","wb"))
+                self.LaunchSearch(music+" song",True)
+            
+                
+
+    def LaunchSearch(self,query,Open=False):
+        Driver = WebDriver()
+        Driver.searchQuery(query,Open)
         
     def LaunchEmail(self):
-        Assistant().speak("Personal or work?")
-        choice = int(input("your choice: "))
-        if choice == 1:
-            Gmail_Personal().main()
-        else:
-            Gmail_Work().main()
-
+        Gmail_Personal().main()
+        Gmail_Work().main()
 
 assistant = Assistant()
 assistant.greetings()
-userInput = input("Say something: ")
-Search().FindQuery(userInput)
+while(True):
+    userInput = input("Say something: ")
+    Search().FindQuery(userInput)

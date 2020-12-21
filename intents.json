@@ -2,10 +2,18 @@
 
     {
         "tag": "mail",
-        "patterns": ["email","emails","show me my mail","have i got any new mail?","open gmail","gmail"]
+        "patterns": ["email","emails","mails","mail","mail status","email status","show me my mail","have i got any new mail?","open gmail","gmail"]
     },
     {
         "tag": "entertainment",
         "patterns": ["play me a music","play some music","entertain me","play something"]
+    },
+    {
+        "tag": "AboutOwner",
+        "patterns": ["what is my name","who am I","who created you"]
+    },
+    {
+        "tag": "OwnerAge",
+        "patterns": ["how old is your owner","age","what is my age","tell me my age","how old am i"]
     }
 ]}
