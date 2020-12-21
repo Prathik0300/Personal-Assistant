@@ -1,0 +1,4 @@
+gmail API:
+
+client id: 573838457305-bv450i4uelojahhqr4ek03qa91viojf7.apps.googleusercontent.com
+client secret: q3sqsv1Z4j-Tc9kN6aMNB67-
