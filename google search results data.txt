@@ -1,0 +1,31 @@
+google snippets header: 
+
+--> .kp-header
+
+
+
+google snippet header text:
+
+--> Z0LcW,XcVN5d
+
+
+featured snippet class:
+
+--> h2.U08X3b
+
+text of featured snippet:
+
+-->span.hgKElc
+
+cite
+
+--> cite.iUh30
+
+Answers div
+
+--> Z0LcW
+
+
+whole search result:
+
+--> div.GyAeWb

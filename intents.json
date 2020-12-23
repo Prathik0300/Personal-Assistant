@@ -1,5 +1,4 @@
 {"intents":[
-
     {
         "tag": "mail",
         "patterns": ["email","emails","mails","mail","mail status","email status","show me my mail","have i got any new mail?","open gmail","gmail"]
@@ -9,11 +8,19 @@
         "patterns": ["play me a music","play some music","entertain me","play something"]
     },
     {
+        "tag":"aboutYou",
+        "patterns": ["who are you","your name","tell me about yourself","your age","what is your age","how old are you"]
+    },
+    {
         "tag": "AboutOwner",
-        "patterns": ["what is my name","who am I","who created you"]
+        "patterns": ["who am I","who created you","my","tell me my","who is my","what is my"]
     },
     {
         "tag": "OwnerAge",
         "patterns": ["how old is your owner","age","what is my age","tell me my age","how old am i"]
+    },
+    {
+        "tag": "close",
+        "patterns": ["logout","exit","close","bye"]
     }
 ]}
